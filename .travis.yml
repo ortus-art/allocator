@@ -34,7 +34,7 @@ script:
 - mkdir coverage_build
 - cd coverage_build
 - cmake -DCMAKE_BUILD_TYPE=Coverage ..
-- make hello_coverage
+- make allocator_coverage
 after_success:
 - cd ${TRAVIS_BUILD_DIR}/coverage_build
 - lcov --list coverage.info
@@ -45,4 +45,4 @@ deploy:
   provider: script
   skip_cleanup: true
   script:
-  - curl -X PUT -T ${TRAVIS_BUILD_DIR}/release_build/hello-1.0.$TRAVIS_BUILD_NUMBER-Linux.deb -uortus-art:$BINTRAY_API_KEY "https://api.bintray.com/content/ortus-art/course/hello/1.0.$TRAVIS_BUILD_NUMBER/pool/main/m/hello/hello-1.0.$TRAVIS_BUILD_NUMBER-Linux.deb;deb_distribution=trusty;deb_component=main;deb_architecture=amd64;publish=1"
+  - curl -X PUT -T ${TRAVIS_BUILD_DIR}/release_build/allocator-1.0.$TRAVIS_BUILD_NUMBER-Linux.deb -uortus-art:$BINTRAY_API_KEY "https://api.bintray.com/content/ortus-art/course/allocator/1.0.$TRAVIS_BUILD_NUMBER/pool/main/m/allocator/allocator-1.0.$TRAVIS_BUILD_NUMBER-Linux.deb;deb_distribution=trusty;deb_component=main;deb_architecture=amd64;publish=1"

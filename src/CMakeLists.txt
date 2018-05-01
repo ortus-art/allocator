@@ -4,13 +4,13 @@ configure_file(version.h.in version.h)
 
 set(PROJECT_LIB ${PROJECT_NAME}_lib)
 
-set(hello_lib_src
+set(allocator_lib_src
     common.h
     common.cpp
 )
 
 #Create a static library that is shared between main application and tests
-add_library(${PROJECT_LIB} STATIC ${hello_lib_src})
+add_library(${PROJECT_LIB} STATIC ${allocator_lib_src})
 target_include_directories(${PROJECT_LIB} PUBLIC ${CMAKE_CURRENT_BINARY_DIR} )
 
 add_executable(${PROJECT_NAME} main.cpp)

@@ -7,7 +7,7 @@ else()
     set(VERSION_BUILD 1)
 endif()
 
-project(hello VERSION 1.0.${VERSION_BUILD})
+project(allocator VERSION 1.0.${VERSION_BUILD})
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 

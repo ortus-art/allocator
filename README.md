@@ -26,6 +26,32 @@ Steps:
 1. All data has to visible in the standard output
 2. The command 'ltrace allocator' has to show reduced number of memory allocations
 
+## Implementation notes
+
+### Allocator Algorithm
+
+The allocator has a very basic implementation that is not thread aware.
+
+It supports dynamic allocation of memory in chunks on the heap. The memory size is passed as the template parameter and it is expressed as a number times sizeof the stored type. The linked list is used as an underlying memory management container.
+
+The memory is allocated one chunk at a time when needed. The memory is added to the end of the list. When the managed object is deleted the memory used by it is marked as free. When node get completely empty it may be deleted depending on the memory management model selected.
+
+There are there memory management models:
+
+* FIFO - The memory is checked and freed from the head of the list
+* LIFO - The memory is checked and freed from the end of the list
+* NONE (Default) - The memory is checked from the end of the list. The free memory blocks are not freed.
+
+### Allocator Memory Consumtion and Layout
+
+The allocator itself uses std::list.
+
+Each chunk has memory map bit set, where one bit is used for each element stored. Plus each item contains a pointer pointing to the chunk manager. So generally memory overhead is sizeof(void *) + 1 bit.
+
+## Forward Only List
+
+There is as well implemented a singly listed forward only list. It has a very basic implementation and is used as one of use cases for the allocator.
+
 [travis-badge]:    https://travis-ci.org/ortus-art/allocator.svg?branch=master
 [travis-link]:     https://travis-ci.org/ortus-art/allocator
 [license-badge]:   https://img.shields.io/badge/License-GPL%20v3-blue.svg

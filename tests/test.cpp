@@ -82,7 +82,7 @@ TEST(main_case, allocator_test_insert_after)
         log << value << ',';
     }
 
-    ASSERT_EQ(log.str(), "2,1,1,1,1,1,1,1,1,1,");
+    ASSERT_EQ(log.str(), "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,");
 }
 
 

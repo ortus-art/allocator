@@ -8,19 +8,77 @@
 using namespace testing;
 
 
-TEST(main_case, list_test)
+TEST(allocator_case, int_test)
+{
+    allocator::chunk_allocator<int> allocator;
+    auto ptr = allocator.allocate(1);
+    ASSERT_TRUE(nullptr != ptr);
+    allocator.deallocate(ptr, 1);
+}
+
+TEST(allocator_case, catch_errors)
+{
+    allocator::chunk_allocator<int> allocator;
+    try {
+        auto ptr = allocator.allocate(2);
+        FAIL() << "Expected ip_filter::parser_error";
+    } catch (std::invalid_argument & e) {
+         EXPECT_EQ(e.what(),std::string("Currently allocator supports only single cell allocation"));
+    } catch (std::exception & e) {
+        FAIL() << "Expected ip_filter::parser_error" << e.what();
+    } catch (...) {
+        FAIL() << "Expected ip_filter::parser_error";
+    }
+
+    try {
+        auto ptr = allocator.allocate(1);
+        allocator.deallocate(ptr, 2);
+        FAIL() << "Expected ip_filter::parser_error";
+    } catch (std::invalid_argument & e) {
+         EXPECT_EQ(e.what(),std::string("Currently allocator supports only single cell allocation"));
+    } catch (std::exception & e) {
+        FAIL() << "Expected ip_filter::parser_error" << e.what();
+    } catch (...) {
+        FAIL() << "Expected ip_filter::parser_error";
+    }
+
+}
+
+
+
+TEST(list_case, list_test)
 {
     allocator::linked_list<int> list;
     for(auto i = 0; i < 10; i++)
         list.push_front(i);
 
     std::ostringstream log;
-    for (auto &value : list) {
+    for (const auto &value : list) {
         log << value << ',';
     }
 
     ASSERT_EQ(log.str(), "9,8,7,6,5,4,3,2,1,0,");
 }
+
+TEST(list_case, list_pair_test)
+{
+    using namespace allocator;
+    using custom_link_std_alloc = linked_list<std::pair<const int, int>>;
+    custom_link_std_alloc list;
+    for(auto i = 0; i < 10; i++)
+    {
+        const auto value = std::make_pair(i,i);
+        list.push_front(value);
+    }
+
+    std::ostringstream log;
+    for (const auto &value : list) {
+        log << value.first << ',';
+    }
+
+    ASSERT_EQ(log.str(), "9,8,7,6,5,4,3,2,1,0,");
+}
+
 
 TEST(main_case, allocator_test)
 {
@@ -30,7 +88,7 @@ TEST(main_case, allocator_test)
         list.push_front(i);
 
     std::ostringstream log;
-    for (auto &value : list) {
+    for (const auto &value : list) {
         log << value << ',';
     }
 
@@ -46,7 +104,7 @@ TEST(main_case, allocator_test_rval)
 
     list.front() = 2;
     std::ostringstream log;
-    for (auto &value : list) {
+    for (const auto &value : list) {
         log << value << ',';
     }
 
@@ -62,7 +120,7 @@ TEST(main_case, allocator_test_rval_calloc)
 
     list.front() = 2;
     std::ostringstream log;
-    for (auto &value : list) {
+    for (const auto &value : list) {
         log << value << ',';
     }
 
@@ -78,7 +136,7 @@ TEST(main_case, allocator_test_insert_after)
         it = list.insert_after(std::move(it), i);
 
     std::ostringstream log;
-    for (auto &value : list) {
+    for (const auto &value : list) {
         log << value << ',';
     }
 

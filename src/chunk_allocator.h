@@ -20,7 +20,7 @@ enum class memory_strategy
     FIFO
 };
 
-namespace _implementation {
+namespace impl {
 
 template<memory_strategy Strategy, typename List, typename NodeManager>
 struct remove_block{
@@ -66,7 +66,7 @@ struct remove_block<memory_strategy::FIFO, List, NodeManager> {
 
 template <typename T, size_t Size = 2, memory_strategy Strategy=memory_strategy::NONE >
 class chunk_allocator {
-   static_assert(Size > 1, "The chunck size should be at least 2 * 8 elements");
+   static_assert(Size > 1, "The chunk size should be at least 2 * 8 elements");
 public:
    using value_type = T;
    using pointer = T *;
@@ -177,7 +177,7 @@ public:
       auto * ptr = reinterpret_cast<typename node_manager::node_t*>(p);
       ptr->manager->free_block(ptr);
       if(ptr->manager->empty())
-        _implementation::remove_block<Strategy, pool_t, node_manager>{}(pool_, ptr->manager);
+        impl::remove_block<Strategy, pool_t, node_manager>{}(pool_, ptr->manager);
 
   }
 

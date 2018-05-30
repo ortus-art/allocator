@@ -8,8 +8,6 @@
 #include <list>
 #include <climits>
 
-#include <cassert>
-
 namespace allocator {
 
 
@@ -30,7 +28,8 @@ struct remove_block{
 template<typename List, typename NodeManager>
 struct remove_block<memory_strategy::LIFO, List, NodeManager> {
     void operator()(List& list, const NodeManager * const ptr){
-        assert(ptr != nullptr);
+        if(nullptr == ptr)
+            throw std::runtime_error("nullptr");
         auto it = list.begin(), end = list.end();
         for( ; it != end; it++)
         {
@@ -47,7 +46,8 @@ struct remove_block<memory_strategy::LIFO, List, NodeManager> {
 template<typename List, typename NodeManager>
 struct remove_block<memory_strategy::FIFO, List, NodeManager> {
     void operator()(List& list, const NodeManager * const  ptr){
-        assert(ptr != nullptr);
+        if(nullptr == ptr)
+            throw std::runtime_error("nullptr");
         auto it = list.rbegin(), end = list.rend();
         for( ; it != end; it++)
         {
@@ -111,7 +111,8 @@ private:
            return nullptr;
        }
        bool free_block(node_t * ptr){
-           assert(nullptr != ptr);
+           if(nullptr == ptr)
+               throw std::runtime_error("nullptr");
            if(ptr >= &(memory[0]) && ptr <= &(memory[memory.size()-1]))
            {
             auto diff = ptr - memory.data();
@@ -136,8 +137,9 @@ private:
        }
    private:
        bool set_used(int bank, u_char bit){
-           assert((Size > bank && 0 <= bank));
-           assert(CHAR_BIT > bit);
+           if((Size > bank && 0 <= bank) ||
+                (CHAR_BIT > bit))
+                  throw std::range_error("cannot access bank");
            bitset[bank] |= (1 <<bit);
            return false;
        }

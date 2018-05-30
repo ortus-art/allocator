@@ -137,8 +137,8 @@ private:
        }
    private:
        bool set_used(int bank, u_char bit){
-           if((Size > bank && 0 <= bank) ||
-                (CHAR_BIT > bit))
+           if(!((Size > bank && 0 <= bank) ||
+                (CHAR_BIT > bit)))
                   throw std::range_error("cannot access bank");
            bitset[bank] |= (1 <<bit);
            return false;

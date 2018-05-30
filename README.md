@@ -9,7 +9,7 @@
 
 Create a memory allocator that allows to allocate memory in chunks for std::map so it will be similar to 'reserve' call.
 
-The allocator has to accept memory size parameter (expressed in number of items). All items placement and deletion is managed by the allocator. Optionally the allocator memory can support dynamic memory growth.
+The allocator has to accept memory chunk size parameter (expressed in number of items). All items placement and deletion is managed by the allocator. Optionally the allocator memory can support dynamic memory growth.
 
 Initially the allocator is used by std::map. In addition project has to define own simple container that is parameterized with allocator and reuses the new defined allocator. The container has to implement at least forward iteration and addition of new elements. Optionally it can be STL compatible.
 
@@ -42,11 +42,11 @@ There are there memory management models:
 * LIFO - The memory is checked and freed from the end of the list
 * NONE (Default) - The memory is checked from the end of the list. The free memory blocks are not freed.
 
-### Allocator Memory Consumtion and Layout
+### Allocator Memory Consumption and Layout
 
 The allocator itself uses std::list.
 
-Each chunk has memory map bit set, where one bit is used for each element stored. Plus each item contains a pointer pointing to the chunk manager. So generally memory overhead is sizeof(void *) + 1 bit.
+Each chunk has memory map bit set, where one bit is used for each element stored. Plus each item contains a pointer pointing to the chunk manager. So generally memory overhead is sizeof(void *) + 1 bit ignoring possible memory alignment.
 
 ## Forward Only List
 

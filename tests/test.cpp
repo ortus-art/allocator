@@ -185,27 +185,6 @@ TEST(main_case, allocator_test)
     ASSERT_EQ(counter, after_counter);
 }
 
-TEST(main_case, allocator_test_rval)
-{
-    const auto counter = app::alloc_counter;
-    {
-        using namespace allocator;
-        linked_list<int, chunk_allocator<int>> list;
-        for(auto i = 0; i < 10; i++)
-            list.push_front(1);
-
-        list.front() = 2;
-        std::ostringstream log;
-        for (const auto &value : list) {
-            log << value << ',';
-        }
-
-        ASSERT_EQ(log.str(), "2,1,1,1,1,1,1,1,1,1,");
-    }
-    const auto after_counter = app::alloc_counter;
-    ASSERT_EQ(counter, after_counter);
-}
-
 
 TEST(app_lib_case, linked_int_test)
 {

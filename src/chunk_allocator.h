@@ -7,6 +7,7 @@
 #include <array>
 #include <list>
 #include <climits>
+#include <limits>
 
 namespace allocator {
 
@@ -64,7 +65,7 @@ struct remove_block<memory_strategy::FIFO, List, NodeManager> {
 
 }
 
-template <typename T, size_t Size = 2, memory_strategy Strategy=memory_strategy::NONE >
+template <typename T, size_t Size = 10, memory_strategy Strategy=memory_strategy::NONE >
 class chunk_allocator {
    static_assert(Size > 1, "The chunk size should be at least 2 * 8 elements");
 public:
@@ -77,11 +78,12 @@ private:
    struct node
    {
        T data;
-       Manager * manager;
+       bool used = false;
+       Manager * manager = nullptr;
    };
    //Define types in specialization
-   static constexpr const auto Chunk_size = Size * CHAR_BIT;
-   //Managers allocated memory chunck
+   static constexpr const auto Chunk_size = Size * CHAR_BIT;   
+   //Managers allocated memory chunk
    class node_manager
    {
 
@@ -98,15 +100,13 @@ private:
        bool operator==(const node_manager& value) {return *this == value;}
        pointer use_free_block(){
            auto i = 0, j = 0;
-           for(; i < Size; i++)
-               for(j = 0; j < CHAR_BIT; j++)
-                   if ((bitset[i] & (1 << j)) == 0)
+           for(auto & item : memory)
+                if(!item.used)
                    {
-                       auto  index = CHAR_BIT*i;
-                       index += j;
-                       pointer result = &(memory[index].data);
-                       set_used(i, j);
-                       return result;
+                        item.used = true;
+                        pointer result = &item.data;
+                        usage_counter++;
+                        return result;
                    }
            return nullptr;
        }
@@ -115,39 +115,23 @@ private:
                throw std::runtime_error("nullptr");
            if(ptr >= &(memory[0]) && ptr <= &(memory[memory.size()-1]))
            {
-            auto diff = ptr - memory.data();
-            auto  index  = diff/CHAR_BIT;
-            u_char unset_bit_mask =~(1 << (diff - index * CHAR_BIT));
-            bitset[index] &= unset_bit_mask;
+            ptr->used = false;
+            usage_counter--;
             return  true;
            }
            return false;
        }
        bool has_free() {
-           for(auto i =0 ; i < Size; i++)
-               if((bitset[i] & 0xFF) != 0xFF)
-                   return true;
-           return false;
+           return Chunk_size > usage_counter;
        }
        bool empty() {
-           for(auto i =0 ; i < Size; i++)
-               if((bitset[i]) != 0)
-                   return false;
-           return false;
+           return 0 == usage_counter;
        }
-   private:
-       bool set_used(int bank, u_char bit){
-           if(!((Size > bank && 0 <= bank) ||
-                (CHAR_BIT > bit)))
-                  throw std::range_error("cannot access bank");
-           bitset[bank] |= (1 <<bit);
-           return false;
-       }
-   private:
-       //Map of block usage
-       u_char bitset[Size] = {};
-       node_array_t memory;
 
+   private:
+       node_array_t memory;
+       unsigned short usage_counter = 0; //Number of items is limited by this type
+       static_assert(Chunk_size < std::numeric_limits<unsigned short>::max(), "Cannot be larger than unsigned short" );
    };
 
 
@@ -161,6 +145,9 @@ public:
 
 
    chunk_allocator() = default;
+   ~chunk_allocator(){
+    pool_.clear();
+   }
 
    template <class U> chunk_allocator (const chunk_allocator<U>&) noexcept {}
    pointer allocate (std::size_t n) {
@@ -179,24 +166,23 @@ public:
       auto * ptr = reinterpret_cast<typename node_manager::node_t*>(p);
       ptr->manager->free_block(ptr);
       if(ptr->manager->empty())
-        impl::remove_block<Strategy, pool_t, node_manager>{}(pool_, ptr->manager);
-
+            impl::remove_block<Strategy, pool_t, node_manager>{}(pool_, ptr->manager);
   }
 
 private:
   pointer get_free_block() {
     //Try to find the first available block;
-    if(pool_.size())
-    {
-        auto it = pool_.rbegin(), end = pool_.rend();
-        for( ; it != end; it++)
-        {
-            if((*it)->has_free())
-                return (*it)->use_free_block();
-        }
-    }
-    pool_.push_back(std::make_unique<node_manager>());
-    return pool_.back()->use_free_block();
+      if(pool_.size())
+          {
+              auto it = pool_.rbegin(), end = pool_.rend();
+              for( ; it != end; it++)
+              {
+                  if((*it)->has_free())
+                      return (*it)->use_free_block();
+              }
+          }
+          pool_.push_back(std::make_unique<node_manager>());
+          return pool_.back()->use_free_block();
   }
 private:  
     using pool_t =   std::list<std::unique_ptr<node_manager>>;

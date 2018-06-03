@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef APP_DEBUG
+#include "mem_debug.h"
+#endif
+
 #include "app_traits.h"
 #include "linked_list.h"
 #include <algorithm>
@@ -73,8 +77,8 @@ template<typename _Tp, typename _Alloc = std::allocator<_Tp>>
 void fill_cntr(int_list<_Tp, _Alloc>& cntr, int times = 10)
 {
     auto it = cntr.begin();
-    for(_Tp i = 0; i < times; i++ )
-        it = cntr.insert_after(std::move(it), i);
+    for(_Tp i = times -1; i >= 0; i-- )
+        cntr.push_front(i);
 }
 
 template<typename _Tp, typename _Compare = std::less<_Tp>,

@@ -46,7 +46,7 @@ There are there memory management models:
 
 The allocator itself uses std::list.
 
-Each chunk has memory map bit set, where one bit is used for each element stored. Plus each item contains a pointer pointing to the chunk manager. So generally memory overhead is sizeof(void *) + 1 bit ignoring possible memory alignment.
+Each chunk has memory map bit set, where one bit is used for each element stored. Plus each item contains a pointer pointing to the chunk manager. So generally memory overhead is size of pointer plus size of bool.
 
 ## Forward Only List
 

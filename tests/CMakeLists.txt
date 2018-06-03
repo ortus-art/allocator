@@ -31,10 +31,13 @@ target_include_directories(${PROJETC_TEST} PUBLIC
     ${PROJECT_BINARY_DIR}/src
 )
 
+target_compile_definitions(${PROJETC_TEST} PUBLIC APP_DEBUG=1)
+
 target_link_libraries(${PROJETC_TEST} Threads::Threads)
 
 target_link_libraries(${PROJETC_TEST} 
   ${PROJECT_NAME}_lib 
+  ${PROJECT_NAME}_app_lib
   ${GTEST_BOTH_LIBRARIES}
 )
 

@@ -64,18 +64,17 @@ private:
     using allocator_type = typename std::allocator_traits<Alloc>::template rebind_alloc<node>;
 
     using node_traits = std::allocator_traits<allocator_type>;
-    using value_traits = std::allocator_traits<Alloc>;    
+    using value_traits = std::allocator_traits<Alloc>;
 public:
     using value_type = T;
     using reference = T&;
     using difference_type = typename node_traits::difference_type;
     using size_type = typename node_traits::size_type;
 private:
-    unique_ptr          head_;
-    unique_ptr          tail_;
-    allocator_type      alloc_;
-    size_type           size_;
-    deleter             deleter_;
+    allocator_type      alloc_{};
+    unique_ptr          head_{ nullptr, &alloc_};
+    unique_ptr          tail_{ nullptr};
+
 private:
     struct deleter
     {
@@ -98,55 +97,33 @@ private:
     {
         unique_ptr ptr {node_traits::allocate(alloc_, 1), deleter(&alloc_)};
         node_traits::construct(alloc_, &(ptr->value), std::forward<Args>(args)...);
-        node_traits::construct(alloc_, &(ptr->next), nullptr, deleter(&alloc_));
+        node_traits::construct(alloc_, &(ptr->next), nullptr, &alloc_);
         return ptr;
     }
 
+    void insert_front( unique_ptr& ptr)
+    {
+        if(!empty())
+            ptr->next.reset(head_.release());
+
+        head_.reset(ptr.release());
+      }
 
 
 public:
-    linked_list():
-        head_(nullptr),
-        tail_(nullptr),
-        alloc_(),
-        size_(0)
-    {
-        deleter_.alloc_ = &alloc_;
-    }
+    linked_list()= default;
 
-    iterator insert_after(iterator pos, const T& value )
-    {
-
-        auto ptr = make_node(value);
-        if(empty())
-            head_.reset(ptr.release());
-        else
-        {
-            if(pos.node_->get() != nullptr)
-                ptr->next.reset((*pos.node_)->next.release());
-            (*pos.node_).reset(ptr.release());
-        }
-        size_ ++;
-        ++pos;
-        return pos;
-    }
     void push_front( const T& value )
     {
 
         auto ptr = make_node(value);
-        if(!empty())
-             ptr->next.reset(head_.release());
-        head_.reset(ptr.release());
-
-        ++size_;
+        insert_front(ptr);
+       
     }
     void push_front(T&& value )
     {
-        auto ptr = make_node(std::move(value));
-        if(!empty())
-             ptr->next.reset(head_.release());
-        head_.reset(ptr.release());
-        ++size_;
+        auto ptr = make_node(value);
+        insert_front(ptr);
     }
 
     reference front() { return head_->value;}
